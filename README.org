@@ -1,0 +1,72 @@
+#+TITLE:     uri-scribe README
+#+AUTHOR:    William Clifford
+#+EMAIL:     wobh@yahoo.com
+#+DATE:      2014-07-19 Sat
+#+DESCRIPTION:
+#+KEYWORDS:
+#+LANGUAGE:  en
+#+OPTIONS:   H:6 num:nil toc:nil \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+#+LINK_UP:   
+#+LINK_HOME: 
+#+XSLT:
+
+* URI Scribe
+
+This is a simple elisp package for reading and writing URIs into and
+from lisp forms. It's intended to be used with the URL package to
+write to the slots of a parsed URI, particularly =url-filename=.
+
+I wrote it mainly to execise some basic elisp and testing techniques,
+but I hope others find it useful.
+
+* How to use it
+
+** Installation
+
+I may not have packaged this quite right for wide distribution, so you
+may have to download, install and require it manually.
+
+** Reading and writing query strings
+
+This is the most "advanced" feature and the one I wrote this for. I
+want to be able to read and write query strings from lisp objects
+somewhat in the manner that =json= package provides. Given a basic
+association list, you can write a query string based on it.
+
+#+BEGIN_SRC elisp
+  (require 'uri-scribe)
+  
+  (let ((form-data '((1 . 2a)
+                     (?a . ?b)
+                     ("foo" . "bar")
+                     (baz . [3 4 5])
+                     (qux . (6 7 8)))))
+    (uri-scribe-make-query form-data))
+  
+  ;; "?1=2a&97=98&foo=bar&baz=%5B3%204%205%5D&qux=6&qux=7&qux=8#"
+  
+  (let ((query-str "?1=2a&a=b&foo=bar&baz=%5B3%204%205%5D&qux=6&qux=7&qux=8#"))
+    (uri-scribe-read-query query-str))
+  
+  ;; (("1" . "2") 
+  ;;  ("97" . "98") 
+  ;;  ("foo" . "bar") 
+  ;;  ("baz" . "%5B3%204%205%5D") 
+  ;;  ("qux" "6" "7" "8"))
+#+END_SRC
+
+** Reading and writing domains and paths
+
+Boring. Look at the tests if you're curious.
+
+* Known issues
+
+- As mentioned, I might not have packaged this up right.
+- The tests could be broken down more.
+- The tests are perhaps overthorough.
+
+

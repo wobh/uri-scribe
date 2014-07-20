@@ -1,10 +1,13 @@
+;; -*- mode: emacs-lisp; -*-
 ;;; uri-scribe.el --- helper uri functions
 
 ;; Copyright (C) 2014 William Clifford
 
 ;; Author: William Clifford <wobh@yahoo.com>
 ;; Keywords: local, comm
-;; Version: "0.1.0"
+;; Version: "0.2.0"
+
+;; This file is NOT part of GNU Emacs.
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -22,8 +25,8 @@
 ;;; Commentary:
 
 ;; Some helper functions for composing URIs. Mainly reading and
-;; writing query strings but also for some other helpful stuff not in
-;; the url package.
+;; writing query strings from and to association lists. Intended for
+;; use with the url package's url structs
 
 ;; Example use:
 
@@ -36,52 +39,29 @@
 
 ;;; Code:
 
-(ert-deftest uri-scribe-test-join-query-fields ()
-  "Test joining fields in a query"
-  (should
-   (equal (uri-scribe-join-query-fields "key1=val1" "key2=val2")
-	  "key1=val1&key2=val2")))
+;;; URI Queries
 
 (defun uri-scribe-join-query-fields (&rest fields)
   (mapconcat 'identity fields "&"))
 
-(ert-deftest uri-scribe-test-make-query-field ()
-  "Test making a query field"
-  (should
-   (equal (uri-scribe-make-query-field "key" "value")
-	  "key=value"))
-  (should
-   (equal (uri-scribe-make-query-field 'key 'value)
-	  "key=value"))
-  (should
-   (equal (uri-scribe-make-query-field 1 1)
-	  "1=1"))
-  (should
-   (equal (uri-scribe-make-query-field "key 1" "value 1")
-	  "key%201=value%201"))
-  (should
-   (equal (uri-scribe-make-query-field "key=" "value?")
-	  "key%3D=value%3F"))
-  (should
-   (equal (uri-scribe-make-query-field "key" "value🙆")
-	  "key=value%F0%9F%99%86")))
-
 (defun uri-scribe-make-query-field (key value)
   "Make a query field from key and value"
-  (assert (and (atom key) (atom value)))
-  (mapconcat (lambda (arg)
-	       (url-hexify-string (format "%s" arg)))
+  (unless (stringp key)
+    (signal 'wrong-type-argument '(stringp key)))
+  (unless (stringp value)
+    (signal 'wrong-type-argument '(stringp value)))
+  (mapconcat (lambda (arg) (url-hexify-string arg))
 	     (list key value)
 	     "="))
 
-(ert-deftest uri-scribe-test-make-query-field-values ()
-  "Test making fields of one key with many values"
-  (should
-   (equal (uri-scribe-make-query-field-values "key" "value")
-	  "key=value"))
-  (should
-   (equal (uri-scribe-make-query-field-values "key" "val1" "val2" "val3")
-	  "key=val1&key=val2&key=val3")))
+(defun uri-scribe-read-query-field (field)
+  "Read a query field into cons cell"
+  (unless (stringp field)
+    (signal 'wrong-type-argument '(stringp field)))
+  (let* ((flist (split-string field "="))
+	 (key (url-unhex-string (car flist)))
+	 (value (url-unhex-string (cadr flist))))
+    (cons key value)))
 
 (defun uri-scribe-make-query-field-values (key value &rest values)
   "Make fields of one key with many values"
@@ -94,88 +74,84 @@
 		       values))
       field)))
 
-(ert-deftest uri-scribe-test-make-query ()
-  "Test making queries from association list"
-  (should
-   (equal (uri-scribe-make-query '(("key1" . ("value1" "value2"))
-				   ("key2" . "value3")))
-	  "?key1=value1&key1=value2&key2=value3")))
-
 (defun uri-scribe-make-query (alist)
   "Make uri query string from alist"
-  (concat "?"
+  (format "?%s#"
 	  (apply 'uri-scribe-join-query-fields
 		 (mapcar (lambda (arg)
-			   (if (atom (cdr arg))
-			       (uri-scribe-make-query-field (car arg) (cdr arg))
-			     (apply 'uri-scribe-make-query-field-values
-				    (car arg) (cdr arg))))
+			   (cond ((stringp (cdr arg))
+				  (uri-scribe-make-query-field (car arg) (cdr arg)))
+				 (t
+				  (apply 'uri-scribe-make-query-field-values
+					 (car arg) (cdr arg)))))
 			 alist))))
-
-(ert-deftest uri-scribe-test-read-query ()
-  "Test making queries"
-  (should
-   (equal (uri-scribe-read-query "?key1=value1&key1=value2&key2=value3")
-	  '(("key1" . ("value1" "value2"))
-	    ("key2" . "value3")))))
 
 (defun uri-scribe-read-query (query)
   "Make an alist from query string"
-  (let ((alist ()))
+  (let ((start (if (string-prefix-p "?" query) 1 0))
+	(stop (when (equal "#" (substring query -1)) -1))
+	(alist ()))
     (mapc (lambda (field)
-	    (let* ((flist (split-string field "="))
-		   (key (car flist))
-		   (value (cadr flist))
-		   (acons (assoc-string key alist)))
+	    (let* ((fcons (uri-scribe-read-query-field field))
+		   (acons (assoc-string (car fcons) alist)))
 	      (if (null alist)
-		  (push (cons key value) alist)
+		  (push fcons alist)
 		(if acons
-		    (if (atom (cdr acons))
+		    (if (stringp (cdr acons))
 			(setcdr acons
-				(list (cdr acons) value))
-		      (nconc (cdr acons) (list value)))
-		  (nconc alist (list (cons key value))))
-		)))
-	  (split-string (substring query 1 nil) "&"))
+				(list (cdr acons) (cdr fcons)))
+		      (nconc (cdr acons) (list (cdr fcons))))
+		  (nconc alist (list fcons))))))
+	  (split-string (substring query start stop) "&"))
     alist))
 
-(ert-deftest uri-scribe-test-make-domain ()
-  "Test making a domain"
-  (should
-   (equal (uri-scribe-make-domain '())
-	  ""))
-  (should
-   (equal (uri-scribe-make-domain '(""))
-	  ""))
-  (should
-   (equal (uri-scribe-make-domain '("foo"))
-	  "foo"))
-  (should
-   (equal (uri-scribe-make-domain '("foo" "com"))
-	  "foo.com")))
+;;; URI Domains
 
-(defun uri-scribe-make-domain (domains)
-  "Make domain from list"
-  (mapconcat 'identity domains "."))
+(defun uri-scribe-make-domain (names)
+  "Make domain from list of names"
+  (unless (consp names)
+    (signal 'wrong-type-argument '(consp names)))
+  (cond ((equal '("") names)
+	 ".")
+	(t
+	 (mapconcat 'identity 
+		    (append (remove "" (butlast names)) (last names))
+		    "."))))
 
-(ert-deftest uri-scribe-test-make-path ()
-  "Test making a domain"
-  (should
-   (equal (uri-scribe-make-path '())
-	  ""))
-  (should
-   (equal (uri-scribe-make-path '(""))
-	  "/"))
-  (should
-   (equal (uri-scribe-make-path '("bar"))
-	  "/bar"))
-  (should
-   (equal (uri-scribe-make-path '("bar" "baz" "qux"))
-	  "/bar/baz/qux")))
+(defun uri-scribe-read-domain (domain)
+  "Read domain into list of names"
+  (split-string domain "[\.]"))
+
+;;; URI Paths
 
 (defun uri-scribe-make-path (nodes)
-  "Make path from list"
-  (mapconcat 'identity (cons "" nodes) "/"))
+  "Make path from list of nodes"
+  (unless (consp nodes)
+    (signal 'wrong-type-argument '(consp nodes)))
+  (cond ((equal '("") nodes)
+	 "/")
+	(t
+	 (mapconcat 'identity 
+		    (cons (car nodes) (remove "" (cdr nodes)))
+		    "/"))))
 
+(defun uri-scribe-read-path (path-str)
+  "Read path into list of nodes"
+  (split-string path-str "/"))
+
+(defun uri-scribe-set-path-root (root path)
+  "Set a root for path if it isn't already set"
+  (unless (stringp root)
+    (signal 'wrong-type-argument '(stringp root)))
+  (unless (stringp path)
+    (signal 'wrong-type-argument '(stringp path)))
+  (unless (string-prefix-p "/" root)
+    (setf root (concat "/" root)))
+  (unless (string-prefix-p "/" path)
+    (setf path (concat "/" path)))
+  (if (string-prefix-p root path)
+      path 
+    (concat root path)))
+	
 (provide 'uri-scribe)
 ;;; uri-scribe.el ends here

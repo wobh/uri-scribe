@@ -41,10 +41,10 @@ association list, you can write a query string based on it.
   (require 'uri-scribe)
 
   (uri-scribe-make-query '(("1" . "2")
-			   ("a" . "b")
-			   ("foo" . "bar")
-			   ("baz" . "[3 4 5]")
-			   ("qux" . ("6" "7" "8"))))
+                           ("a" . "b")
+                           ("foo" . "bar")
+                           ("baz" . "[3 4 5]")
+                           ("qux" . ("6" "7" "8"))))
 
   ;; "?1=2&a=b&foo=bar&baz=%5B3%204%205%5D&qux=6&qux=7&qux=8#")))
 

@@ -5,7 +5,7 @@
 
 ;; Author: William Clifford <wobh@yahoo.com>
 ;; Keywords: local, comm
-;; Version: "0.2.0"
+;; Version: "0.2.1"
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -114,7 +114,7 @@
   (cond ((equal '("") names)
 	 ".")
 	(t
-	 (mapconcat 'identity 
+	 (mapconcat 'identity
 		    (append (remove "" (butlast names)) (last names))
 		    "."))))
 
@@ -131,7 +131,7 @@
   (cond ((equal '("") nodes)
 	 "/")
 	(t
-	 (mapconcat 'identity 
+	 (mapconcat 'identity
 		    (cons (car nodes) (remove "" (cdr nodes)))
 		    "/"))))
 
@@ -150,8 +150,8 @@
   (unless (string-prefix-p "/" path)
     (setf path (concat "/" path)))
   (if (string-prefix-p root path)
-      path 
+      path
     (concat root path)))
-	
+
 (provide 'uri-scribe)
 ;;; uri-scribe.el ends here

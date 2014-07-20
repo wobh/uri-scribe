@@ -10,8 +10,8 @@
 #+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
 #+EXPORT_SELECT_TAGS: export
 #+EXPORT_EXCLUDE_TAGS: noexport
-#+LINK_UP:   
-#+LINK_HOME: 
+#+LINK_UP:
+#+LINK_HOME:
 #+XSLT:
 
 * URI Scribe
@@ -39,24 +39,23 @@ association list, you can write a query string based on it.
 
 #+BEGIN_SRC elisp
   (require 'uri-scribe)
-  
-  (let ((form-data '((1 . 2a)
-                     (?a . ?b)
-                     ("foo" . "bar")
-                     (baz . [3 4 5])
-                     (qux . (6 7 8)))))
-    (uri-scribe-make-query form-data))
-  
-  ;; "?1=2a&97=98&foo=bar&baz=%5B3%204%205%5D&qux=6&qux=7&qux=8#"
-  
-  (let ((query-str "?1=2a&a=b&foo=bar&baz=%5B3%204%205%5D&qux=6&qux=7&qux=8#"))
-    (uri-scribe-read-query query-str))
-  
-  ;; (("1" . "2") 
-  ;;  ("97" . "98") 
-  ;;  ("foo" . "bar") 
-  ;;  ("baz" . "%5B3%204%205%5D") 
-  ;;  ("qux" "6" "7" "8"))
+
+  (uri-scribe-make-query '(("1" . "2")
+			   ("a" . "b")
+			   ("foo" . "bar")
+			   ("baz" . "[3 4 5]")
+			   ("qux" . ("6" "7" "8"))))
+
+  ;; "?1=2&a=b&foo=bar&baz=%5B3%204%205%5D&qux=6&qux=7&qux=8#")))
+
+  (uri-scribe-read-query
+   "?1=2&a=b&foo=bar&baz=%5B3%204%205%5D&qux=6&qux=7&qux=8#")
+
+  ;; '(("1" . "2")
+  ;;   ("a" . "b")
+  ;;   ("foo" . "bar")
+  ;;   ("baz" . "[3 4 5]")
+  ;;   ("qux" . ("6" "7" "8")))
 #+END_SRC
 
 ** Reading and writing domains and paths
@@ -68,5 +67,3 @@ Boring. Look at the tests if you're curious.
 - As mentioned, I might not have packaged this up right.
 - The tests could be broken down more.
 - The tests are perhaps overthorough.
-
-

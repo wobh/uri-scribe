@@ -5,7 +5,7 @@
 
 ;; Author: Clifford <wclifford@wclifford901.local>
 ;; Keywords: local
-;; Version: 0.2.0
+;; Version: 0.2.1
 ;; Package-Requires: ((uri-scribe))
 
 ;; This file is NOT part of GNU Emacs.
@@ -39,10 +39,10 @@
 
 (ert-deftest uri-scribe-test-make-query-field ()
   "Test making a query field"
-  (should-error 
+  (should-error
    (uri-scribe-make-query-field t "value")
    :type '(wrong-type-argument stringp key))
-  (should-error 
+  (should-error
    (uri-scribe-make-query-field "key" t)
    :type '(wrong-type-argument stringp value))
   (should
@@ -97,7 +97,7 @@
    (equal (uri-scribe-make-query '(("key1" . ("value1" "value2"))
 				   ("key2" . "value3")))
 	  "?key1=value1&key1=value2&key2=value3#"))
-   (should 
+   (should
     (equal (uri-scribe-make-query '(("1" . "2")
 				    ("a" . "b")
 				    ("foo" . "bar")
@@ -111,8 +111,8 @@
    (equal (uri-scribe-read-query "?key1=value1&key1=value2&key2=value3#")
 	  '(("key1" . ("value1" "value2"))
 	    ("key2" . "value3"))))
-  (should 
-   (equal (uri-scribe-read-query 
+  (should
+   (equal (uri-scribe-read-query
 	   "?1=2&a=b&foo=bar&baz=%5B3%204%205%5D&qux=6&qux=7&qux=8#")
 	  '(("1" . "2")
 	    ("a" . "b")
@@ -180,7 +180,7 @@
 	 (subject (copy-tree control)))
     (should
      (equal (uri-scribe-make-path subject) "foo/bar"))
-    (should 
+    (should
      (equal subject control)))
   (should
    (equal (uri-scribe-make-path '("" "foo" "bar"))
@@ -219,9 +219,7 @@
   (should
    (equal (uri-scribe-set-path-root "bar" "baz/foo")
 	  "/bar/baz/foo")))
-	  
+
 
 (provide 'uri-scribe-tests)
 ;;; uri-scribe-tests.el ends here
-
-

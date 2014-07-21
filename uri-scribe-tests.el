@@ -5,7 +5,7 @@
 
 ;; Author: Clifford <wclifford@wclifford901.local>
 ;; Keywords: local
-;; Version: 0.2.1
+;; Version: 0.2.2
 ;; Package-Requires: ((uri-scribe))
 
 ;; This file is NOT part of GNU Emacs.
@@ -31,11 +31,22 @@
 
 (require 'uri-scribe)
 
-(ert-deftest uri-scribe-test-join-query-fields ()
+;;; URI Utilities
+
+(ert-deftest uri-scribe-test-join-fields ()
   "Test joining fields in a query"
   (should
-   (equal (uri-scribe-join-query-fields "key1=val1" "key2=val2")
-	  "key1=val1&key2=val2")))
+   (equal (uri-scribe-join-fields "&" "key1=val1" "key2=val2")
+	  "key1=val1&key2=val2"))
+  (should 
+   (equal (uri-scribe-join-fields "/" "foo" "bar" "baz")
+	  "foo/bar/baz"))
+  (should
+   (equal (uri-scribe-join-fields "." "bar" "baz" "qux")
+	  "bar.baz.qux")))
+
+
+;;; URI Queries
 
 (ert-deftest uri-scribe-test-make-query-field ()
   "Test making a query field"

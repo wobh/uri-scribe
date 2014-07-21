@@ -5,7 +5,7 @@
 
 ;; Author: William Clifford <wobh@yahoo.com>
 ;; Keywords: local, comm
-;; Version: "0.2.1"
+;; Version: "0.2.2"
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -39,10 +39,15 @@
 
 ;;; Code:
 
+
+;;; URI Utilities
+
+(defun uri-scribe-join-fields (str &rest fields)
+  (mapconcat 'identity fields str))
+
 ;;; URI Queries
 
-(defun uri-scribe-join-query-fields (&rest fields)
-  (mapconcat 'identity fields "&"))
+
 
 (defun uri-scribe-make-query-field (key value)
   "Make a query field from key and value"
@@ -67,7 +72,7 @@
   "Make fields of one key with many values"
   (let ((field (uri-scribe-make-query-field key value)))
     (if values
-	(apply 'uri-scribe-join-query-fields
+	(apply 'uri-scribe-join-fields "&"
 	       field
 	       (mapcar (lambda (val)
 			 (uri-scribe-make-query-field key val))
@@ -77,7 +82,7 @@
 (defun uri-scribe-make-query (alist)
   "Make uri query string from alist"
   (format "?%s#"
-	  (apply 'uri-scribe-join-query-fields
+	  (apply 'uri-scribe-join-fields "&"
 		 (mapcar (lambda (arg)
 			   (cond ((stringp (cdr arg))
 				  (uri-scribe-make-query-field (car arg) (cdr arg)))
@@ -114,9 +119,8 @@
   (cond ((equal '("") names)
 	 ".")
 	(t
-	 (mapconcat 'identity
-		    (append (remove "" (butlast names)) (last names))
-		    "."))))
+	 (apply 'uri-scribe-join-fields "."
+		(append (remove "" (butlast names)) (last names))))))
 
 (defun uri-scribe-read-domain (domain)
   "Read domain into list of names"
@@ -131,9 +135,8 @@
   (cond ((equal '("") nodes)
 	 "/")
 	(t
-	 (mapconcat 'identity
-		    (cons (car nodes) (remove "" (cdr nodes)))
-		    "/"))))
+	 (apply 'uri-scribe-join-fields "/"
+		(cons (car nodes) (remove "" (cdr nodes)))))))
 
 (defun uri-scribe-read-path (path-str)
   "Read path into list of nodes"

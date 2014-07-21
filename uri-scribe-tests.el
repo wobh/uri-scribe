@@ -38,7 +38,7 @@
   (should
    (equal (uri-scribe-join-fields "&" "key1=val1" "key2=val2")
 	  "key1=val1&key2=val2"))
-  (should 
+  (should
    (equal (uri-scribe-join-fields "/" "foo" "bar" "baz")
 	  "foo/bar/baz"))
   (should
@@ -51,10 +51,10 @@
 (ert-deftest uri-scribe-test-make-query-field ()
   "Test making a query field"
   (should-error
-   (uri-scribe-make-query-field t "value")
+   (uri-scribe-make-query-field "key" t)
    :type '(wrong-type-argument stringp t))
   (should-error
-   (uri-scribe-make-query-field "key" t)
+   (uri-scribe-make-query-field t "value")
    :type '(wrong-type-argument stringp t))
   (should
    (equal (uri-scribe-make-query-field "key" "value")
@@ -75,11 +75,14 @@
    (uri-scribe-read-query-field t)
    :type '(wrong-type-argument stringp t))
   (should
-   (equal (uri-scribe-read-query-field "=value")
-	  '("" . "value")))
+   (equal (uri-scribe-read-query-field "key")
+	  ("key" . "")))
   (should
    (equal (uri-scribe-read-query-field "key=")
 	  '("key" . "")))
+  (should
+   (equal (uri-scribe-read-query-field "=value")
+	  '("" . "value")))
   (should
    (equal (uri-scribe-read-query-field "key=value")
 	  '("key" . "value")))
@@ -107,24 +110,24 @@
   (should
    (equal (uri-scribe-make-query '(("key1" . ("value1" "value2"))
 				   ("key2" . "value3")))
-	  "?key1=value1&key1=value2&key2=value3#"))
+	  "?key1=value1&key1=value2&key2=value3"))
    (should
     (equal (uri-scribe-make-query '(("1" . "2")
 				    ("a" . "b")
 				    ("foo" . "bar")
 				    ("baz" . "[3 4 5]")
 				    ("qux" . ("6" "7" "8"))))
-	   "?1=2&a=b&foo=bar&baz=%5B3%204%205%5D&qux=6&qux=7&qux=8#")))
+	   "?1=2&a=b&foo=bar&baz=%5B3%204%205%5D&qux=6&qux=7&qux=8")))
 
 (ert-deftest uri-scribe-test-read-query ()
   "Test reading queries into association list"
   (should
-   (equal (uri-scribe-read-query "?key1=value1&key1=value2&key2=value3#")
+   (equal (uri-scribe-read-query "?key1=value1&key1=value2&key2=value3#fragment")
 	  '(("key1" . ("value1" "value2"))
 	    ("key2" . "value3"))))
   (should
    (equal (uri-scribe-read-query
-	   "?1=2&a=b&foo=bar&baz=%5B3%204%205%5D&qux=6&qux=7&qux=8#")
+	   "?1=2&a=b&foo=bar&baz=%5B3%204%205%5D&qux=6&qux=7&qux=8")
 	  '(("1" . "2")
 	    ("a" . "b")
 	    ("foo" . "bar")
@@ -230,6 +233,48 @@
   (should
    (equal (uri-scribe-set-path-root "bar" "baz/foo")
 	  "/bar/baz/foo")))
+
+
+;;; URI Fragments
+
+(ert-deftest uri-scribe-test-make-fragment ()
+  "Test making a fragment"
+  (should-error
+   (uri-scribe-make-fragment t)
+   :type '(wrong-type-argument stringp t))
+  (should-error
+   (uri-scribe-make-fragment "qux" t)
+   :type '(wrong-type-argument stringp t))
+  (should
+   (equal (uri-scribe-make-fragment "qux")
+	  "#qux"))
+  (should
+   (equal (uri-scribe-make-fragment "#qux")
+	  "#qux"))
+  (should
+   (equal (uri-scribe-make-fragment "qux" "/foo/bar/baz")
+	  "/foo/bar/baz#qux"))
+  (should
+   (equal (uri-scribe-make-fragment "qux" "/foo/bar#baz")
+	  "/foo/bar#qux")))
+
+(ert-deftest uri-scribe-test-read-fragment ()
+  "Test reading a fragment"
+  (should-error
+   (uri-scribe-read-fragment t)
+   :type '(wrong-type-argument stringp t))
+  (should
+   (equal (uri-scribe-read-fragment "qux")
+	  nil))
+  (should
+   (equal (uri-scribe-read-fragment "#qux")
+	  "qux"))
+  (should
+   (equal (uri-scribe-read-fragment "/foo/bar#baz")
+	  "baz"))
+  (should
+   (equal (uri-scribe-read-fragment "/foo/bar#baz?qux")
+	  "baz")))
 
 
 (provide 'uri-scribe-tests)

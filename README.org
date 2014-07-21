@@ -68,10 +68,6 @@ Boring. Look at the tests if you're curious.
 - The tests could be broken down more.
 - The tests are perhaps overthorough.
 
-* To-do
-
-- fragments
-
 * References
 
 - https://tools.ietf.org/html/rfc3986

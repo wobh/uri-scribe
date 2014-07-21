@@ -52,9 +52,9 @@
 (defun uri-scribe-make-query-field (key value)
   "Make a query field from key and value"
   (unless (stringp key)
-    (signal 'wrong-type-argument '(stringp key)))
+    (signal 'wrong-type-argument (list 'stringp key)))
   (unless (stringp value)
-    (signal 'wrong-type-argument '(stringp value)))
+    (signal 'wrong-type-argument (list 'stringp value)))
   (mapconcat (lambda (arg) (url-hexify-string arg))
 	     (list key value)
 	     "="))
@@ -62,7 +62,7 @@
 (defun uri-scribe-read-query-field (field)
   "Read a query field into cons cell"
   (unless (stringp field)
-    (signal 'wrong-type-argument '(stringp field)))
+    (signal 'wrong-type-argument (list 'stringp field)))
   (let* ((flist (split-string field "="))
 	 (key (url-unhex-string (car flist)))
 	 (value (url-unhex-string (cadr flist))))
@@ -115,7 +115,7 @@
 (defun uri-scribe-make-domain (names)
   "Make domain from list of names"
   (unless (consp names)
-    (signal 'wrong-type-argument '(consp names)))
+    (signal 'wrong-type-argument (list 'consp names)))
   (cond ((equal '("") names)
 	 ".")
 	(t
@@ -131,7 +131,7 @@
 (defun uri-scribe-make-path (nodes)
   "Make path from list of nodes"
   (unless (consp nodes)
-    (signal 'wrong-type-argument '(consp nodes)))
+    (signal 'wrong-type-argument (list 'consp nodes)))
   (cond ((equal '("") nodes)
 	 "/")
 	(t
@@ -144,10 +144,6 @@
 
 (defun uri-scribe-set-path-root (root path)
   "Set a root for path if it isn't already set"
-  (unless (stringp root)
-    (signal 'wrong-type-argument '(stringp root)))
-  (unless (stringp path)
-    (signal 'wrong-type-argument '(stringp path)))
   (unless (string-prefix-p "/" root)
     (setf root (concat "/" root)))
   (unless (string-prefix-p "/" path)

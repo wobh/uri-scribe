@@ -3,7 +3,7 @@
 
 ;; Copyright (C) 2014 William Clifford
 
-;; Author: Clifford <wclifford@wclifford901.local>
+;; Author: William Clifford <wobh@yahoo.com>
 ;; Keywords: local
 ;; Version: 0.2.2
 ;; Package-Requires: ((uri-scribe))
@@ -45,6 +45,15 @@
    (equal (uri-scribe-join-fields "." "bar" "baz" "qux")
 	  "bar.baz.qux")))
 
+(ert-deftest uri-scribe-set-prefix ()
+  "Test setting a prefix to a string"
+  (should
+   (equal (uri-scribe-set-prefix "foo+" "bar")
+	  "foo+bar"))
+  (should
+   (equal (uri-scribe-set-prefix "foo+" "foo+bar")
+	  "foo+bar")))
+
 
 ;;; URI Queries
 
@@ -76,7 +85,7 @@
    :type '(wrong-type-argument stringp t))
   (should
    (equal (uri-scribe-read-query-field "key")
-	  ("key" . "")))
+	  '("key" . "")))
   (should
    (equal (uri-scribe-read-query-field "key=")
 	  '("key" . "")))

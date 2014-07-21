@@ -47,9 +47,11 @@
   (mapconcat 'identity fields infix))
 
 (defun uri-scribe-set-prefix (prefix string)
+  "Sets a prefix to string, if not already so prefixed"
   (if (string-prefix-p prefix string)
       string
     (concat prefix string)))
+
 
 ;;; URI Queries
 
@@ -150,11 +152,8 @@
 
 (defun uri-scribe-set-path-root (root path)
   "Set a root for path if it isn't already set"
-  (setf root (uri-scribe-set-prefix "/" root))
-  (setf path (uri-scribe-set-prefix "/" path))
-  (uri-scribe-set-prefix root path))
-
-
+  (uri-scribe-set-prefix (uri-scribe-set-prefix "/" root)
+			 (uri-scribe-set-prefix "/" path)))
 
 ;;; URI Fragments
 
@@ -166,8 +165,8 @@
   (cond (path
 	 (unless (stringp path)
 	   (signal 'wrong-type-argument (list 'stringp path)))
-	 (setf path (substring path 0 (string-match "#" path)))
-	 (concat path fragment))
+	 (concat (substring path 0 (string-match "#" path))
+		 fragment))
 	(t fragment)))
 
 (defun uri-scribe-read-fragment (path)
@@ -176,8 +175,7 @@
     (signal 'wrong-type-argument (list 'stringp path)))
   (let ((start (string-match "#" path)))
     (when start
-      (setf start (1+ start))
-      (substring path start (string-match "?" path)))))
+      (substring path (1+ start) (string-match "?" path)))))
 
 (provide 'uri-scribe)
 ;;; uri-scribe.el ends here

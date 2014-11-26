@@ -36,22 +36,22 @@
 (ert-deftest uri-scribe-test-join-fields ()
   "Test joining fields in a query"
   (should
-   (equal (uri-scribe-join-fields "&" "key1=val1" "key2=val2")
+   (equal (uri-scribe--join-fields "&" "key1=val1" "key2=val2")
 	  "key1=val1&key2=val2"))
   (should
-   (equal (uri-scribe-join-fields "/" "foo" "bar" "baz")
+   (equal (uri-scribe--join-fields "/" "foo" "bar" "baz")
 	  "foo/bar/baz"))
   (should
-   (equal (uri-scribe-join-fields "." "bar" "baz" "qux")
+   (equal (uri-scribe--join-fields "." "bar" "baz" "qux")
 	  "bar.baz.qux")))
 
 (ert-deftest uri-scribe-set-prefix ()
   "Test setting a prefix to a string"
   (should
-   (equal (uri-scribe-set-prefix "foo+" "bar")
+   (equal (uri-scribe--set-prefix "foo+" "bar")
 	  "foo+bar"))
   (should
-   (equal (uri-scribe-set-prefix "foo+" "foo+bar")
+   (equal (uri-scribe--set-prefix "foo+" "foo+bar")
 	  "foo+bar")))
 
 
@@ -60,58 +60,58 @@
 (ert-deftest uri-scribe-test-make-query-field ()
   "Test making a query field"
   (should-error
-   (uri-scribe-make-query-field "key" t)
+   (uri-scribe--make-query-field "key" t)
    :type '(wrong-type-argument stringp t))
   (should-error
-   (uri-scribe-make-query-field t "value")
+   (uri-scribe--make-query-field t "value")
    :type '(wrong-type-argument stringp t))
   (should
-   (equal (uri-scribe-make-query-field "key" "value")
+   (equal (uri-scribe--make-query-field "key" "value")
 	  "key=value"))
   (should
-   (equal (uri-scribe-make-query-field "?key=" "=value#")
+   (equal (uri-scribe--make-query-field "?key=" "=value#")
 	  "%3Fkey%3D=%3Dvalue%23"))
   (should
-   (equal (uri-scribe-make-query-field "&key%" " value&")
+   (equal (uri-scribe--make-query-field "&key%" " value&")
 	  "%26key%25=%20value%26"))
   (should
-   (equal (uri-scribe-make-query-field "baz" "[3 4 5]")
+   (equal (uri-scribe--make-query-field "baz" "[3 4 5]")
 	  "baz=%5B3%204%205%5D")))
 
 (ert-deftest uri-scribe-test-read-query-field ()
   "Test reading a query field"
   (should-error
-   (uri-scribe-read-query-field t)
+   (uri-scribe--read-query-field t)
    :type '(wrong-type-argument stringp t))
   (should
-   (equal (uri-scribe-read-query-field "key")
+   (equal (uri-scribe--read-query-field "key")
 	  '("key" . "")))
   (should
-   (equal (uri-scribe-read-query-field "key=")
+   (equal (uri-scribe--read-query-field "key=")
 	  '("key" . "")))
   (should
-   (equal (uri-scribe-read-query-field "=value")
+   (equal (uri-scribe--read-query-field "=value")
 	  '("" . "value")))
   (should
-   (equal (uri-scribe-read-query-field "key=value")
+   (equal (uri-scribe--read-query-field "key=value")
 	  '("key" . "value")))
   (should
-   (equal (uri-scribe-read-query-field "%3Fkey%3D=%3Dvalue%23")
+   (equal (uri-scribe--read-query-field "%3Fkey%3D=%3Dvalue%23")
 	  '("?key=" . "=value#")))
   (should
-   (equal (uri-scribe-read-query-field "%26key%25=%20value%26")
+   (equal (uri-scribe--read-query-field "%26key%25=%20value%26")
 	  '("&key%" . " value&")))
   (should
-   (equal (uri-scribe-read-query-field "baz=%5B3%204%205%5D")
+   (equal (uri-scribe--read-query-field "baz=%5B3%204%205%5D")
 	   '("baz" . "[3 4 5]"))))
 
 (ert-deftest uri-scribe-test-make-query-field-values ()
   "Test making fields of one key with many values"
   (should
-   (equal (uri-scribe-make-query-field-values "key" "value")
+   (equal (uri-scribe--make-query-field-values "key" "value")
 	  "key=value"))
   (should
-   (equal (uri-scribe-make-query-field-values "key" "val1" "val2" "val3")
+   (equal (uri-scribe--make-query-field-values "key" "val1" "val2" "val3")
 	  "key=val1&key=val2&key=val3")))
 
 (ert-deftest uri-scribe-test-make-query ()
@@ -225,22 +225,22 @@
 (ert-deftest uri-scribe-test-set-path-root ()
   "Test setting path root if unspecified."
   (should-error
-   (uri-scribe-set-path-root 1 "baz/foo")
+   (uri-scribe--set-path-root 1 "baz/foo")
    :type '(wrong-type-argument stringp 1))
   (should-error
-   (uri-scribe-set-path-root "foo" 2)
+   (uri-scribe--set-path-root "foo" 2)
    :type '(wrong-type-argument stringp 2))
   (should
-   (equal (uri-scribe-set-path-root "/bar" "baz/foo")
+   (equal (uri-scribe--set-path-root "/bar" "baz/foo")
 	  "/bar/baz/foo"))
   (should
-   (equal (uri-scribe-set-path-root "/bar" "/baz/foo")
+   (equal (uri-scribe--set-path-root "/bar" "/baz/foo")
 	  "/bar/baz/foo"))
   (should
-   (equal (uri-scribe-set-path-root "/bar" "/bar/baz/foo")
+   (equal (uri-scribe--set-path-root "/bar" "/bar/baz/foo")
 	  "/bar/baz/foo"))
   (should
-   (equal (uri-scribe-set-path-root "bar" "baz/foo")
+   (equal (uri-scribe--set-path-root "bar" "baz/foo")
 	  "/bar/baz/foo")))
 
 

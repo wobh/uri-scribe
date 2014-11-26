@@ -42,11 +42,11 @@
 
 ;;; URI Utilities
 
-(defun uri-scribe-join-fields (infix &rest fields)
+(defun uri-scribe--join-fields (infix &rest fields)
   "Join fields with INFIX string"
   (mapconcat 'identity fields infix))
 
-(defun uri-scribe-set-prefix (prefix string)
+(defun uri-scribe--set-prefix (prefix string)
   "Sets a prefix to string, if not already so prefixed"
   (if (string-prefix-p prefix string)
       string
@@ -55,7 +55,7 @@
 
 ;;; URI Queries
 
-(defun uri-scribe-make-query-field (key value)
+(defun uri-scribe--make-query-field (key value)
   "Make a query field from key and value"
   (unless (stringp key)
     (signal 'wrong-type-argument (list 'stringp key)))
@@ -65,7 +65,7 @@
 	     (list key value)
 	     "="))
 
-(defun uri-scribe-read-query-field (field)
+(defun uri-scribe--read-query-field (field)
   "Read a query field into cons cell"
   (unless (stringp field)
     (signal 'wrong-type-argument (list 'stringp field)))
@@ -74,26 +74,26 @@
 	 (value (url-unhex-string (cadr flist))))
     (cons key value)))
 
-(defun uri-scribe-make-query-field-values (key value &rest values)
+(defun uri-scribe--make-query-field-values (key value &rest values)
   "Make fields of one key with many values"
-  (let ((field (uri-scribe-make-query-field key value)))
+  (let ((field (uri-scribe--make-query-field key value)))
     (if values
-	(apply 'uri-scribe-join-fields "&"
+	(apply 'uri-scribe--join-fields "&"
 	       field
 	       (mapcar (lambda (val)
-			 (uri-scribe-make-query-field key val))
+			 (uri-scribe--make-query-field key val))
 		       values))
       field)))
 
 (defun uri-scribe-make-query (alist)
   "Make uri query string from alist"
   (format "?%s"
-	  (apply 'uri-scribe-join-fields "&"
+	  (apply 'uri-scribe--join-fields "&"
 		 (mapcar (lambda (arg)
 			   (cond ((stringp (cdr arg))
-				  (uri-scribe-make-query-field (car arg) (cdr arg)))
+				  (uri-scribe--make-query-field (car arg) (cdr arg)))
 				 (t
-				  (apply 'uri-scribe-make-query-field-values
+				  (apply 'uri-scribe--make-query-field-values
 					 (car arg) (cdr arg)))))
 			 alist))))
 
@@ -103,7 +103,7 @@
 	(stop (string-match "#" query))
 	(alist ()))
     (mapc (lambda (field)
-	    (let* ((fcons (uri-scribe-read-query-field field))
+	    (let* ((fcons (uri-scribe--read-query-field field))
 		   (acons (assoc-string (car fcons) alist)))
 	      (if (null alist)
 		  (push fcons alist)
@@ -126,7 +126,7 @@
   (cond ((equal '("") names)
 	 ".")
 	(t
-	 (apply 'uri-scribe-join-fields "."
+	 (apply 'uri-scribe--join-fields "."
 		(append (remove "" (butlast names)) (last names))))))
 
 (defun uri-scribe-read-domain (domain)
@@ -143,17 +143,17 @@
   (cond ((equal '("") nodes)
 	 "/")
 	(t
-	 (apply 'uri-scribe-join-fields "/"
+	 (apply 'uri-scribe--join-fields "/"
 		(cons (car nodes) (remove "" (cdr nodes)))))))
 
 (defun uri-scribe-read-path (path-str)
   "Read path into list of nodes"
   (split-string path-str "/"))
 
-(defun uri-scribe-set-path-root (root path)
+(defun uri-scribe--set-path-root (root path)
   "Set a root for path if it isn't already set"
-  (uri-scribe-set-prefix (uri-scribe-set-prefix "/" root)
-			 (uri-scribe-set-prefix "/" path)))
+  (uri-scribe--set-prefix (uri-scribe--set-prefix "/" root)
+			 (uri-scribe--set-prefix "/" path)))
 
 ;;; URI Fragments
 
@@ -161,7 +161,7 @@
   "Make a fragment, append to optional path"
   (unless (stringp fragment)
     (signal 'wrong-type-argument (list 'stringp fragment)))
-  (setf fragment (uri-scribe-set-prefix "#" fragment))
+  (setf fragment (uri-scribe--set-prefix "#" fragment))
   (cond (path
 	 (unless (stringp path)
 	   (signal 'wrong-type-argument (list 'stringp path)))
